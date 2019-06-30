@@ -90,13 +90,13 @@ namespace Raymarcher
             if (ks.IsKeyDown(Keys.D))
                 deltaPosition.X = 1;
             if (ks.IsKeyDown(Keys.W))
-                deltaPosition.Y = -1;
-            if (ks.IsKeyDown(Keys.S))
-                deltaPosition.Y = 1;
-            if (ks.IsKeyDown(Keys.R))
                 deltaPosition.Z = 1;
-            if (ks.IsKeyDown(Keys.F))
+            if (ks.IsKeyDown(Keys.S))
                 deltaPosition.Z = -1;
+            if (ks.IsKeyDown(Keys.R))
+                deltaPosition.Y = -1;
+            if (ks.IsKeyDown(Keys.F))
+                deltaPosition.Y = 1;
             position_offset += deltaPosition * (float)gameTime.ElapsedGameTime.TotalSeconds * 75;
 
             if (ks.IsKeyDown(Keys.O))
