@@ -19,7 +19,8 @@ namespace Raymarcher
         float totalElapsedTime;
         float u_time_multiplier;
         float max_steps = 20;
-        Vector2 rotation = new Vector2(0, 1);
+        Vector3 parameters = new Vector3(10, 10, .1f);
+        Vector2 rotation = new Vector2(0, 0);
 
         Vector3 position_offset = new Vector3(280, 280, -500);
         Vector4[] spheres;
@@ -103,6 +104,15 @@ namespace Raymarcher
             if (ks.IsKeyDown(Keys.L))
                 max_steps -= (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            if (ks.IsKeyDown(Keys.Right))
+                rotation.Y -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (ks.IsKeyDown(Keys.Left))
+                rotation.Y += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (ks.IsKeyDown(Keys.Up))
+                rotation.X -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (ks.IsKeyDown(Keys.Down))
+                rotation.X += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
             System.Diagnostics.Debug.WriteLine(position_offset);
 
             Window.Title = Window.ClientBounds.ToString();
@@ -118,6 +128,8 @@ namespace Raymarcher
             //shader.Parameters["resolution_y"].SetValue(800f);
             shader.Parameters["max_steps"].SetValue(max_steps);
             shader.Parameters["position_offset"].SetValue(position_offset);
+            //shader.Parameters["parameters"].SetValue(parameters);
+            shader.Parameters["rotation"].SetValue(rotation);
             for (int i = 0; i < spheres.Length; i++)
             {
                 shader.Parameters["spheres"].Elements[i].SetValue(spheres[i]);

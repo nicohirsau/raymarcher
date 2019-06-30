@@ -4,6 +4,25 @@ float4 spheres[4];
 float4 colors[4];
 float3 position_offset;
 float max_steps;
+//float3 parameters;
+float2 rotation;
+
+float3x3 AngleAxis3x3(float angle, float3 axis)
+{
+	float c, s;
+	sincos(angle, s, c);
+
+	float t = 1 - c;
+	float x = axis.x;
+	float y = axis.y;
+	float z = axis.z;
+
+	return float3x3(
+		t * x * x + c, t * x * y - s * z, t * x * z + s * y,
+		t * x * y + s * z, t * y * y + c, t * y * z - s * x,
+		t * x * z - s * y, t * y * z + s * x, t * z * z + c
+	);
+}
 
 
 float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
@@ -16,6 +35,11 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 		lerp(-0.5, 0.5, coords.y),
 		1
 	));
+
+	float3x3 rotX = AngleAxis3x3(rotation.x, float3(1, 0, 0));
+	direction = mul(direction, rotX);
+	float3x3 rotY = AngleAxis3x3(rotation.y, float3(0, 1, 0));
+	direction = mul(direction, rotY);
 
 	float distanceToOrigin = 0.0;
 	float steps_taken = 0.0;
