@@ -45,19 +45,21 @@ namespace Raymarcher
             sphereposition2 = new Vector2(400, 225);
             totalElapsedTime = 0;
             u_time_multiplier = 15f;
-            spheres = new Vector4[4]
+            spheres = new Vector4[5]
             {
                 new Vector4(400, 255, 200, 100),
                 new Vector4(500, 255, 50, 30),
                 new Vector4(300, 180, 100, 50),
-                new Vector4(100, 325, 100, 45)
+                new Vector4(100, 325, 100, 45),
+                new Vector4(250, 400, 300, 200)
             };
-            colors = new Vector4[4]
+            colors = new Vector4[5]
             {
                 new Vector4(1, 0, 0, 1),
                 new Vector4(0, 1, 0, 1),
                 new Vector4(0, 0, 1, 1),
-                new Vector4(1, 1, 1, 1)
+                new Vector4(1, 1, 1, 1),
+                new Vector4(0.5f, 0.5f, 0.5f, 1)
             };
             base.Initialize();
         }
@@ -129,6 +131,7 @@ namespace Raymarcher
             shader.Parameters["max_steps"].SetValue(max_steps);
             shader.Parameters["position_offset"].SetValue(position_offset);
             //shader.Parameters["parameters"].SetValue(parameters);
+            //shader.Parameters["u_elapsedTime"].SetValue(totalElapsedTime);
             shader.Parameters["rotation"].SetValue(rotation);
             for (int i = 0; i < spheres.Length; i++)
             {

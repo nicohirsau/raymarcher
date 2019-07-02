@@ -1,9 +1,10 @@
 ﻿float resolution_x;
 float resolution_y;
-float4 spheres[4];
-float4 colors[4];
+float4 spheres[5];
+float4 colors[5];
 float3 position_offset;
 float max_steps;
+float u_elapsedTime;
 //float3 parameters;
 float2 rotation;
 
@@ -42,14 +43,16 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 	direction = mul(direction, rotY);
 
 	float distanceToOrigin = 0.0;
+	float closestDistance = 9999999;
 	float steps_taken = 0.0;
+	int closestSphere = -1;
 	bool hit = false;
 	float4 color;
 	
 	while(distanceToOrigin < 999)
 	{
 		float distance = 9999999;
-		for (int i = 0; i < 4; i++) 
+		for (int i = 0; i < 5; i++) 
 		{
 			float cDistance = length(
 				float3(
@@ -62,7 +65,12 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 			{
 				distance = cDistance;
 			}
-			if (cDistance < 0.1) 
+			if (cDistance < closestDistance && (cDistance < max_steps && (closestSphere == i || closestSphere == -1)))// || closestSphere == -1))
+			{
+				closestDistance = cDistance;
+				closestSphere = i;
+			}
+			if (cDistance < 0.1)
 			{
 				float shading = 1.0 - steps_taken / max_steps;
 				color = float4(
@@ -71,6 +79,17 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 					colors[i].z * shading,
 					1
 				);
+
+				if (closestSphere != i) {
+					float background_shading = 1 - closestDistance / max_steps;
+					color = float4(
+						lerp(colors[i].x * shading, background_shading * colors[closestSphere].x, 0.5),
+						lerp(colors[i].y * shading, background_shading * colors[closestSphere].y, 0.5),
+						lerp(colors[i].z * shading, background_shading * colors[closestSphere].z, 0.5),
+						1
+						);
+				}
+
 				hit = true;
 				break;
 			}
@@ -83,8 +102,22 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 		distanceToOrigin =  length(rayPosition - origin);
 	}
 	if (!hit) {
-		float background_shading = 1 * (steps_taken / (max_steps));
-		color = float4(background_shading * 0.64, background_shading * 0.45, background_shading * 0.96, 1);
+		float background_shading = 1 - closestDistance / max_steps;
+		color = float4(
+			background_shading * colors[closestSphere].x, 
+			background_shading * colors[closestSphere].y, 
+			background_shading * colors[closestSphere].z, 
+			background_shading
+		);
+		if (background_shading < 0) 
+		{
+			color = float4(
+				0.64* (steps_taken / max_steps),//,40/255.0
+				0.45*(steps_taken / max_steps), //,28/255.0
+				0.96*(steps_taken / max_steps), //,60/255.0
+				1
+				);
+		}
 	}
 	return color;
 }
