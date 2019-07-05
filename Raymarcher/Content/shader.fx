@@ -7,6 +7,7 @@ float max_steps;
 float u_elapsedTime;
 //float3 parameters;
 float2 rotation;
+float2 resolution;
 
 float3x3 AngleAxis3x3(float angle, float3 axis)
 {
@@ -30,10 +31,11 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 {
 	float3 rayPosition = position_offset;
 	float3 origin = position_offset;
+	float widthToHeight = resolution.y / resolution.x;
 	float3 direction = normalize(
 		float3(
-		lerp(-0.5, 0.5, coords.x),
-		lerp(-0.5, 0.5, coords.y),
+		lerp(-0.7, 0.7, coords.x),
+		lerp(-0.7 * widthToHeight, 0.7 * widthToHeight, coords.y),
 		1
 	));
 
@@ -65,7 +67,12 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 			{
 				distance = cDistance;
 			}
-			if (cDistance < closestDistance && (cDistance < colors[i].w && (firstClosestSphere == i || firstClosestSphere == -1)))// || firstClosestSphere == -1))
+			if (
+				cDistance < closestDistance && 
+				(
+					cDistance < colors[i].w && 
+					(firstClosestSphere == i || firstClosestSphere == -1)
+				))
 			{
 				closestDistance = cDistance;
 				firstClosestSphere = i;

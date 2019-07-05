@@ -38,9 +38,10 @@ namespace Raymarcher
         {
             // TODO: Add your initialization logic here
             Mouse.SetPosition(1, 1);
-            shaderTexture = new Texture2D(graphics.GraphicsDevice, 1200, 1200);
-            graphics.PreferredBackBufferWidth = 1200;
-            graphics.PreferredBackBufferHeight = 1200;
+            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 720;
+            //graphics.ToggleFullScreen();
+            shaderTexture = new Texture2D(graphics.GraphicsDevice, Window.ClientBounds.Width, Window.ClientBounds.Height);
             this.IsMouseVisible = false;
             
             //graphics.ToggleFullScreen();
@@ -64,7 +65,7 @@ namespace Raymarcher
                 new Vector4(0, 1, 0, 15),
                 new Vector4(0, 0, 1, 10),
                 new Vector4(1, 1, 1, 5),
-                new Vector4(0.5f, 0.5f, 0.5f, 500)
+                new Vector4(0.5f, 0.5f, 0.5f, 1000)
             };
             base.Initialize();
         }
@@ -96,25 +97,25 @@ namespace Raymarcher
             KeyboardState ks = Keyboard.GetState();
             MouseState ms = Mouse.GetState();
 
-            if (ms.Position.X >= 1200)
+            if (ms.Position.X >= Window.ClientBounds.Width - 1)
             {
                 Mouse.SetPosition(1, ms.Position.Y);
                 lastMousePosition = new Point(1, ms.Position.Y);
             }
             if (ms.Position.X <= 0)
             {
-                Mouse.SetPosition(1200 - 1, ms.Position.Y);
-                lastMousePosition = new Point(1200 - 1, ms.Position.Y);
+                Mouse.SetPosition(Window.ClientBounds.Width - 2, ms.Position.Y);
+                lastMousePosition = new Point(Window.ClientBounds.Width - 2, ms.Position.Y);
             }
-            if (ms.Position.Y >= 1200)
+            if (ms.Position.Y >= Window.ClientBounds.Height - 1)
             {
                 Mouse.SetPosition(ms.Position.X, 1);
                 lastMousePosition = new Point(ms.Position.X, 1);
             }
             if (ms.Position.Y <= 0)
             {
-                Mouse.SetPosition(ms.Position.X, 1200 - 1);
-                lastMousePosition = new Point(ms.Position.X, 1200 - 1);
+                Mouse.SetPosition(ms.Position.X, Window.ClientBounds.Height - 2);
+                lastMousePosition = new Point(ms.Position.X, Window.ClientBounds.Height - 2);
             }
             ms = Mouse.GetState();
 
@@ -170,7 +171,7 @@ namespace Raymarcher
             if (ks.IsKeyDown(Keys.LeftShift))
                 position_offset += deltaPosition * 500 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            System.Diagnostics.Debug.WriteLine(position_offset);
+            System.Diagnostics.Debug.WriteLine(ms.Position);
 
             Window.Title = Window.ClientBounds.ToString();
             base.Update(gameTime);
@@ -181,6 +182,7 @@ namespace Raymarcher
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
+            shader.Parameters["resolution"].SetValue(new Vector2(Window.ClientBounds.Width, Window.ClientBounds.Height));
             //shader.Parameters["resolution_x"].SetValue(800f);
             //shader.Parameters["resolution_y"].SetValue(800f);
             shader.Parameters["max_steps"].SetValue(max_steps);
