@@ -9,6 +9,7 @@ namespace Raymarcher
     /// </summary>
     public class Game1 : Game
     {
+        readonly float ninetyDegree = MathHelper.ToRadians(90);
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
@@ -35,9 +36,9 @@ namespace Raymarcher
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            shaderTexture = new Texture2D(graphics.GraphicsDevice, 800, 450);
-            graphics.PreferredBackBufferWidth = 800;
-            graphics.PreferredBackBufferHeight = 800;
+            shaderTexture = new Texture2D(graphics.GraphicsDevice, 1200, 1200);
+            graphics.PreferredBackBufferWidth = 1200;
+            graphics.PreferredBackBufferHeight = 1200;
             //graphics.ToggleFullScreen();
             graphics.ApplyChanges();
             shader = Content.Load<Effect>("shader");
@@ -51,15 +52,15 @@ namespace Raymarcher
                 new Vector4(500, 255, 50, 30),
                 new Vector4(300, 180, 100, 50),
                 new Vector4(100, 325, 100, 45),
-                new Vector4(250, 400, 300, 200)
+                new Vector4(280, 280, 10000, 8000)
             };
             colors = new Vector4[5]
             {
-                new Vector4(1, 0, 0, 1),
-                new Vector4(0, 1, 0, 1),
-                new Vector4(0, 0, 1, 1),
-                new Vector4(1, 1, 1, 1),
-                new Vector4(0.5f, 0.5f, 0.5f, 1)
+                new Vector4(1, 0, 0, 20),
+                new Vector4(0, 1, 0, 15),
+                new Vector4(0, 0, 1, 10),
+                new Vector4(1, 1, 1, 5),
+                new Vector4(0.5f, 0.5f, 0.5f, 50)
             };
             base.Initialize();
         }
@@ -85,21 +86,10 @@ namespace Raymarcher
             // TODO: Add your update logic here
             totalElapsedTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+            // * 150 * (float)gameTime.ElapsedGameTime.TotalSeconds) - position_offset;
+
+            // deltaPosition * 150 * (float)gameTime.ElapsedGameTime.TotalSeconds;
             KeyboardState ks = Keyboard.GetState();
-            Vector3 deltaPosition = Vector3.Zero;
-            if (ks.IsKeyDown(Keys.A))
-                deltaPosition.X = -1;
-            if (ks.IsKeyDown(Keys.D))
-                deltaPosition.X = 1;
-            if (ks.IsKeyDown(Keys.W))
-                deltaPosition.Z = 1;
-            if (ks.IsKeyDown(Keys.S))
-                deltaPosition.Z = -1;
-            if (ks.IsKeyDown(Keys.R))
-                deltaPosition.Y = -1;
-            if (ks.IsKeyDown(Keys.F))
-                deltaPosition.Y = 1;
-            position_offset += deltaPosition * (float)gameTime.ElapsedGameTime.TotalSeconds * 75;
 
             if (ks.IsKeyDown(Keys.O))
                 max_steps += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -115,7 +105,28 @@ namespace Raymarcher
             if (ks.IsKeyDown(Keys.Down))
                 rotation.X += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            System.Diagnostics.Debug.WriteLine(position_offset);
+            rotation.X = MathHelper.Clamp(rotation.X, -ninetyDegree, ninetyDegree);
+            
+            Vector3 deltaPosition = Vector3.Zero;
+            if (ks.IsKeyDown(Keys.A))
+                deltaPosition.X = -1;
+            if (ks.IsKeyDown(Keys.D))
+                deltaPosition.X = 1;
+            if (ks.IsKeyDown(Keys.W))
+                deltaPosition.Z = 1;
+            if (ks.IsKeyDown(Keys.S))
+                deltaPosition.Z = -1;
+            if (ks.IsKeyDown(Keys.R))
+                deltaPosition.Y = -1;
+            if (ks.IsKeyDown(Keys.F))
+                deltaPosition.Y = 1;
+            
+            deltaPosition = Vector3.Transform(deltaPosition, Matrix.CreateRotationX(-rotation.X));
+            deltaPosition = Vector3.Transform(deltaPosition, Matrix.CreateRotationY(-rotation.Y));
+
+            position_offset += deltaPosition * 150 * (float)gameTime.ElapsedGameTime.TotalSeconds; ;
+
+            System.Diagnostics.Debug.WriteLine(MathHelper.ToDegrees(rotation.X));
 
             Window.Title = Window.ClientBounds.ToString();
             base.Update(gameTime);
@@ -145,5 +156,7 @@ namespace Raymarcher
 
             base.Draw(gameTime);
         }
+
+
     }
 }

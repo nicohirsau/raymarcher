@@ -45,11 +45,11 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 	float distanceToOrigin = 0.0;
 	float closestDistance = 9999999;
 	float steps_taken = 0.0;
-	int closestSphere = -1;
+	int firstClosestSphere = -1;
 	bool hit = false;
 	float4 color;
 	
-	while(distanceToOrigin < 999)
+	while(distanceToOrigin < 50000)
 	{
 		float distance = 9999999;
 		for (int i = 0; i < 5; i++) 
@@ -65,10 +65,10 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 			{
 				distance = cDistance;
 			}
-			if (cDistance < closestDistance && (cDistance < max_steps && (closestSphere == i || closestSphere == -1)))// || closestSphere == -1))
+			if (cDistance < closestDistance && (cDistance < colors[i].w && (firstClosestSphere == i || firstClosestSphere == -1)))// || firstClosestSphere == -1))
 			{
 				closestDistance = cDistance;
-				closestSphere = i;
+				firstClosestSphere = i;
 			}
 			if (cDistance < 0.1)
 			{
@@ -80,12 +80,24 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 					1
 				);
 
-				if (closestSphere != i) {
-					float background_shading = 1 - closestDistance / max_steps;
+				// When the position is in the atmosphere of the sphere
+				//if (length(
+				//	float3(
+				//		spheres[i].x - origin.x,
+				//		spheres[i].y - origin.y,
+				//		spheres[i].z - origin.z
+				//		)
+				//) - spheres[i].w < max_steps) {
+				//	color = float4(0, 0, 0, 0);
+				//}
+
+				// When it went through the atmosphere of another sphere
+				if (firstClosestSphere != i) {
+					float background_shading = 1.0 - closestDistance / colors[firstClosestSphere].w;
 					color = float4(
-						lerp(colors[i].x * shading, background_shading * colors[closestSphere].x, 0.5),
-						lerp(colors[i].y * shading, background_shading * colors[closestSphere].y, 0.5),
-						lerp(colors[i].z * shading, background_shading * colors[closestSphere].z, 0.5),
+						lerp(colors[i].x * shading, background_shading * colors[firstClosestSphere].x, background_shading),
+						lerp(colors[i].y * shading, background_shading * colors[firstClosestSphere].y, background_shading),
+						lerp(colors[i].z * shading, background_shading * colors[firstClosestSphere].z, background_shading),
 						1
 						);
 				}
@@ -98,25 +110,28 @@ float4 PixelShaderFunction(float2 coords: TEXCOORD0) : COLOR0
 			break;
 		}
 		rayPosition += direction * distance;
-		steps_taken = steps_taken + 1.0;
+		steps_taken++;
 		distanceToOrigin =  length(rayPosition - origin);
 	}
 	if (!hit) {
-		float background_shading = 1 - closestDistance / max_steps;
-		color = float4(
-			background_shading * colors[closestSphere].x, 
-			background_shading * colors[closestSphere].y, 
-			background_shading * colors[closestSphere].z, 
-			background_shading
-		);
-		if (background_shading < 0) 
+		float background_shading = 1.0 - closestDistance / colors[firstClosestSphere].w;
+		if (background_shading > 0) 
 		{
 			color = float4(
-				0.64* (steps_taken / max_steps),//,40/255.0
-				0.45*(steps_taken / max_steps), //,28/255.0
-				0.96*(steps_taken / max_steps), //,60/255.0
+				lerp(background_shading * colors[firstClosestSphere].x, 0.64 * (steps_taken / max_steps), 1 - background_shading),
+				lerp(background_shading * colors[firstClosestSphere].y, 0.45 * (steps_taken / max_steps), 1 - background_shading),
+				lerp(background_shading * colors[firstClosestSphere].z, 0.96 * (steps_taken / max_steps), 1 - background_shading),
 				1
-				);
+			);
+		}
+		else
+		{
+			color = float4(
+				0.64 * (steps_taken / max_steps), //,40/255.0
+				0.45 * (steps_taken / max_steps), //,28/255.0
+				0.96 * (steps_taken / max_steps), //,60/255.0
+				1
+			);
 		}
 	}
 	return color;
