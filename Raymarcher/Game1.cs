@@ -26,6 +26,7 @@ namespace Raymarcher
         Vector3 position_offset = new Vector3(280, 280, -500);
         Vector4[] spheres;
         Vector4[] colors;
+        Point lastMousePosition;
 
         public Game1()
         {
@@ -36,9 +37,12 @@ namespace Raymarcher
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            Mouse.SetPosition(1, 1);
             shaderTexture = new Texture2D(graphics.GraphicsDevice, 1200, 1200);
             graphics.PreferredBackBufferWidth = 1200;
             graphics.PreferredBackBufferHeight = 1200;
+            this.IsMouseVisible = false;
+            
             //graphics.ToggleFullScreen();
             graphics.ApplyChanges();
             shader = Content.Load<Effect>("shader");
@@ -50,9 +54,9 @@ namespace Raymarcher
             {
                 new Vector4(400, 255, 200, 100),
                 new Vector4(500, 255, 50, 30),
-                new Vector4(300, 180, 100, 50),
+                new Vector4(250, 180, 100, 50),
                 new Vector4(100, 325, 100, 45),
-                new Vector4(280, 280, 10000, 8000)
+                new Vector4(-10000, -8000, 10000, 5000)
             };
             colors = new Vector4[5]
             {
@@ -60,7 +64,7 @@ namespace Raymarcher
                 new Vector4(0, 1, 0, 15),
                 new Vector4(0, 0, 1, 10),
                 new Vector4(1, 1, 1, 5),
-                new Vector4(0.5f, 0.5f, 0.5f, 50)
+                new Vector4(0.5f, 0.5f, 0.5f, 500)
             };
             base.Initialize();
         }
@@ -90,6 +94,43 @@ namespace Raymarcher
 
             // deltaPosition * 150 * (float)gameTime.ElapsedGameTime.TotalSeconds;
             KeyboardState ks = Keyboard.GetState();
+            MouseState ms = Mouse.GetState();
+
+            if (ms.Position.X >= 1200)
+            {
+                Mouse.SetPosition(1, ms.Position.Y);
+                lastMousePosition = new Point(1, ms.Position.Y);
+            }
+            if (ms.Position.X <= 0)
+            {
+                Mouse.SetPosition(1200 - 1, ms.Position.Y);
+                lastMousePosition = new Point(1200 - 1, ms.Position.Y);
+            }
+            if (ms.Position.Y >= 1200)
+            {
+                Mouse.SetPosition(ms.Position.X, 1);
+                lastMousePosition = new Point(ms.Position.X, 1);
+            }
+            if (ms.Position.Y <= 0)
+            {
+                Mouse.SetPosition(ms.Position.X, 1200 - 1);
+                lastMousePosition = new Point(ms.Position.X, 1200 - 1);
+            }
+            ms = Mouse.GetState();
+
+            if (ms.Position != lastMousePosition)
+            {
+                Point deltaMousePosition = (ms.Position - lastMousePosition);
+                
+                rotation += new Vector2(
+                    deltaMousePosition.Y,
+                    -deltaMousePosition.X    
+                ) * .1f * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                lastMousePosition = ms.Position;
+            }
+
+            if (ks.IsKeyDown(Keys.C))
+                rotation = Vector2.Zero;
 
             if (ks.IsKeyDown(Keys.O))
                 max_steps += (float)gameTime.ElapsedGameTime.TotalSeconds;
@@ -124,9 +165,12 @@ namespace Raymarcher
             deltaPosition = Vector3.Transform(deltaPosition, Matrix.CreateRotationX(-rotation.X));
             deltaPosition = Vector3.Transform(deltaPosition, Matrix.CreateRotationY(-rotation.Y));
 
-            position_offset += deltaPosition * 150 * (float)gameTime.ElapsedGameTime.TotalSeconds; ;
+            position_offset += deltaPosition * 150 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            System.Diagnostics.Debug.WriteLine(MathHelper.ToDegrees(rotation.X));
+            if (ks.IsKeyDown(Keys.LeftShift))
+                position_offset += deltaPosition * 500 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+            System.Diagnostics.Debug.WriteLine(position_offset);
 
             Window.Title = Window.ClientBounds.ToString();
             base.Update(gameTime);
