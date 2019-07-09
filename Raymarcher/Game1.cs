@@ -23,7 +23,7 @@ namespace Raymarcher
         Vector3 parameters = new Vector3(10, 10, .1f);
         Vector2 rotation = new Vector2(0, 0);
 
-        Vector3 position_offset = new Vector3(280, 280, -500);
+        Vector3 position_offset = new Vector3(0, 0, -5);
         Vector4[] spheres;
         Vector4[] colors;
         Point lastMousePosition;
@@ -46,7 +46,7 @@ namespace Raymarcher
             
             //graphics.ToggleFullScreen();
             graphics.ApplyChanges();
-            shader = Content.Load<Effect>("shader");
+            shader = Content.Load<Effect>("mandelbulb");
             sphereposition = new Vector2(400, 225);
             sphereposition2 = new Vector2(400, 225);
             totalElapsedTime = 0;
@@ -166,12 +166,12 @@ namespace Raymarcher
             deltaPosition = Vector3.Transform(deltaPosition, Matrix.CreateRotationX(-rotation.X));
             deltaPosition = Vector3.Transform(deltaPosition, Matrix.CreateRotationY(-rotation.Y));
 
-            position_offset += deltaPosition * 150 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            position_offset += deltaPosition * .5f * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
             if (ks.IsKeyDown(Keys.LeftShift))
                 position_offset += deltaPosition * 500 * (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-            System.Diagnostics.Debug.WriteLine(ms.Position);
+            System.Diagnostics.Debug.WriteLine(position_offset);
 
             Window.Title = Window.ClientBounds.ToString();
             base.Update(gameTime);
@@ -190,11 +190,11 @@ namespace Raymarcher
             //shader.Parameters["parameters"].SetValue(parameters);
             //shader.Parameters["u_elapsedTime"].SetValue(totalElapsedTime);
             shader.Parameters["rotation"].SetValue(rotation);
-            for (int i = 0; i < spheres.Length; i++)
-            {
-                shader.Parameters["spheres"].Elements[i].SetValue(spheres[i]);
-                shader.Parameters["colors"].Elements[i].SetValue(colors[i]);
-            }
+            //for (int i = 0; i < spheres.Length; i++)
+            //{
+            //    shader.Parameters["spheres"].Elements[i].SetValue(spheres[i]);
+            //    shader.Parameters["colors"].Elements[i].SetValue(colors[i]);
+            //}
             shader.CurrentTechnique.Passes[0].Apply();
             spriteBatch.Draw(shaderTexture, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
 
